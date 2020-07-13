@@ -1,0 +1,18 @@
+ARG DF_PHP_VERSION
+
+FROM resolutte/php-fpm-${DF_PHP_VERSION}
+#FROM php:${DF_PHP_VERSION}-fpm-alpine
+
+LABEL maintainer="Eduardo Zinhani <ezinhani@gmail.com>"
+
+WORKDIR /var/www
+RUN rm -rf /var/www/html
+
+COPY ./backend /var/www
+RUN composer install && \
+    php artisan config:cache && \
+    chmod -R 777 storage
+
+EXPOSE 9000
+
+ENTRYPOINT ["php-fpm"]

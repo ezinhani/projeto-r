@@ -1,0 +1,54 @@
+steps:
+
+  - id: 'Decrypt Password'
+    name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - "kms"
+      - "decrypt"
+      - "--ciphertext-file=./backend/storage/credentials/google/service-account-storage.json.enc"
+      - "--plaintext-file=./backend/storage/credentials/google/service-account-storage.json"
+      - "--location=global"
+      - "--keyring=Resolutte"
+      - "--key=service-account"
+
+  - id: "Criando volumes temporário mongodbdata"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['volume','create','--name=mongodbdata']
+
+  - id: "Criando volumes temporário postgresdata"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['volume','create','--name=postgresdata']
+
+  - id: "Rodando docker-compose"
+    name: 'gcr.io/$PROJECT_ID/docker-compose:1.24.0'
+    args: ['-f','docker-compose.yml','up','-d','--build']
+    env:
+      - GOOGLE_CLOUD_PROJECT_ID=$PROJECT_ID
+      - GOOGLE_CLOUD_KEY_FILE=service-account-storage.json
+      - GOOGLE_CLOUD_STORAGE_BUCKET=resolutte-s1
+      - GOOGLE_CLOUD_STORAGE_API_URI=https://storage.cloud.google.com/resolutte-s1
+      - TESTING_PROD=true
+
+  - id: "Rodando composer"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec','-t','app','composer','install']
+
+  - id: "Copiando .env"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec','-t','app','cp','.env.example','.env']
+
+  - id: "Copiando .env.testing"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec','-t','app','cp','.env.testing.example','.env.testing']
+
+  - id: "Rodando key:generate"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec','-t','app','php','/var/www/artisan','key:generate']
+
+  - id: "Rodando migrations"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec','-t','app','php','/var/www/artisan','migrate']
+
+  - id: "Rodando Phpunit"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec','-t','app','php','/var/www/vendor/bin/phpunit','-c','/var/www/phpunit.xml']

@@ -1,0 +1,72 @@
+steps:
+
+  - id: 'Decrypt Password'
+    name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - "kms"
+      - "decrypt"
+      - "--ciphertext-file=./backend/storage/credentials/google/service-account-storage.json.enc"
+      - "--plaintext-file=./backend/storage/credentials/google/service-account-storage.json"
+      - "--location=global"
+      - "--keyring=Resolutte"
+      - "--key=service-account"
+
+  - id: "Rodando docker-compose"
+    name: 'gcr.io/$PROJECT_ID/docker-compose:1.24.0'
+    args: ['-f','docker-compose.prod.yml','up','-d','--build']
+    env:
+      - GOOGLE_CLOUD_PROJECT_ID=$PROJECT_ID
+      - GOOGLE_CLOUD_KEY_FILE=service-account-storage.json
+      - GOOGLE_CLOUD_STORAGE_BUCKET=resolutte-s1
+      - GOOGLE_CLOUD_STORAGE_API_URI=https://storage.cloud.google.com/resolutte-s1
+      - TESTING_PROD=true
+
+  - id: "Rodando composer"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec','-t','app','composer','install']
+
+  - id: "Copiando .env"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec','-t','app','cp','.env.example','.env']
+
+  - id: "Copiando .env.testing"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec','-t','app','cp','.env.testing.example','.env.testing']
+
+  - id: "Rodando key:generate"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec','-t','app','php','/var/www/artisan','key:generate']
+
+  - id: "Rodando migrations"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec','-t','app','php','/var/www/artisan','migrate']
+
+  - id: "Rodando Phpunit"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec','-t','app','php','/var/www/vendor/bin/phpunit','-c','/var/www/phpunit.xml']
+
+  - id: "Pushing image app"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['tag','app:latest','gcr.io/$PROJECT_ID/app:$SHORT_SHA']
+
+  - id: "Ajustando o arquivo de deployment - k8s"
+    name: 'gcr.io/cloud-builders/docker'
+    entrypoint: '/bin/sh'
+    args:
+      - 'c'
+      - |
+        sed 's#img-app-deployment#gcr.io/$PROJECT_ID/app:$SHORT_SHA#g' .k8s/app/deployment.yaml > .k8s/app/deployment-new.yaml;
+        cat .k8s/app/deployment-new.yaml
+
+  - id: "Deploying k8s - app"
+    name: 'gcr.io/cloud-builders/kubectl'
+    args:
+      - 'apply'
+      - '-f'
+      - 'k8s/app/deployment-new.yaml'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=us-east4-c'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=cluster-r1'
+
+images:
+  - 'gcr.io/${PROJECT_ID}/app:$SHORT_SHA'

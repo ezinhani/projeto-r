@@ -1,0 +1,30 @@
+version: '3'
+
+networks:
+  default:
+    external:
+      name: cloudbuild
+
+services:
+
+  app:
+    container_name: app
+    restart: always
+    build:
+      context: .docker/php-fpm-5
+      dockerfile: Dockerfile
+    volumes:
+      - .docker/php-fpm/php${PHP_VERSION_5}.ini:/usr/local/etc/php/php.ini
+      - ${APP_CODE_PATH_HOST}${APP_NAME}:${APP_CODE_PATH_CONTAINER}${APP_NAME}${APP_CONTAINER_FLAG}
+    ports:
+      - "${PHP_FPM_SSH_PORT_5}:22"
+    tty: true
+    expose:
+      - "9000"
+    environment:
+      - PHP_IDE_CONFIG=${PHP_IDE_CONFIG}
+      - FAKETIME=${PHP_FPM_FAKETIME}
+      - DB_HOST=mysql
+      - DB_DATABASE=${MYSQL_DATABASE}
+      - DB_USERNAME=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
