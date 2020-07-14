@@ -11,52 +11,52 @@ networks:
 
 services:
 
-  ### Artisan ################################################
-  artisan:
-    image: resolutte/php-fpm-${PHP_VERSION}
-    container_name: resolutte-artisan
-    environment:
-      PHP_VERSION: ${PHP_VERSION}
-    volumes:
-      - ${APP_CODE_PATH_HOST}${APP_NAME}:${APP_CODE_PATH_CONTAINER}${APP_CONTAINER_FLAG}
-    working_dir: ${APP_CODE_PATH_CONTAINER}
-    entrypoint: ['${APP_CODE_PATH_CONTAINER}/artisan']
-    user: "${PHP_FPM_PUID}:${PHP_FPM_PGID}"
-    networks:
-      - backend
-
-  ### Composer ################################################
-  composer:
-    image: composer:latest
-    container_name: resolutte-composer
-    tty: true
-    volumes:
-      - ${APP_CODE_PATH_HOST}${APP_NAME}:${APP_CODE_PATH_CONTAINER}${APP_CONTAINER_FLAG}
-    working_dir: ${APP_CODE_PATH_CONTAINER}
-    entrypoint: "composer --ignore-platform-reqs"
-    user: "${PHP_FPM_PUID}:${PHP_FPM_PGID}"
-    networks:
-      - backend
-
-  ### Npm ################################################
-  npm:
-    image: node:12
-    container_name: resolutte-npm
-    ports:
-      - "${BROWSERSYNC_PORT}:3000"
-      - "${BROWSERSYNC_ADMIN_PORT}:3001"
-      - "${WEBPACK_PORT}:${WEBPACK_PORT}"
-    environment:
-      MIX_MODE: ${MIX_MODE}
-      MIX_BROWSERSYNC: ${MIX_BROWSERSYNC}
-    entrypoint: "npm run ${MIX_MODE}"
-    volumes:
-      - ./:/var/www
-      - ./docker/nginx/keys:/etc/ssl
-    working_dir: /var/www
-    user: "${PHP_FPM_PUID}:${PHP_FPM_PGID}"
-    networks:
-      - backend
+#  ### Artisan ################################################
+#  artisan:
+#    image: resolutte/php-fpm-${PHP_VERSION}
+#    container_name: resolutte-artisan
+#    environment:
+#      PHP_VERSION: ${PHP_VERSION}
+#    volumes:
+#      - ${APP_CODE_PATH_HOST}${APP_NAME}:${APP_CODE_PATH_CONTAINER}${APP_CONTAINER_FLAG}
+#    working_dir: ${APP_CODE_PATH_CONTAINER}
+#    entrypoint: ['${APP_CODE_PATH_CONTAINER}/artisan']
+#    user: "${PHP_FPM_PUID}:${PHP_FPM_PGID}"
+#    networks:
+#      - backend
+#
+#  ### Composer ################################################
+#  composer:
+#    image: composer:latest
+#    container_name: resolutte-composer
+#    tty: true
+#    volumes:
+#      - ${APP_CODE_PATH_HOST}${APP_NAME}:${APP_CODE_PATH_CONTAINER}${APP_CONTAINER_FLAG}
+#    working_dir: ${APP_CODE_PATH_CONTAINER}
+#    entrypoint: "composer --ignore-platform-reqs"
+#    user: "${PHP_FPM_PUID}:${PHP_FPM_PGID}"
+#    networks:
+#      - backend
+#
+#  ### Npm ################################################
+#  npm:
+#    image: node:12
+#    container_name: resolutte-npm
+#    ports:
+#      - "${BROWSERSYNC_PORT}:3000"
+#      - "${BROWSERSYNC_ADMIN_PORT}:3001"
+#      - "${WEBPACK_PORT}:${WEBPACK_PORT}"
+#    environment:
+#      MIX_MODE: ${MIX_MODE}
+#      MIX_BROWSERSYNC: ${MIX_BROWSERSYNC}
+#    entrypoint: "npm run ${MIX_MODE}"
+#    volumes:
+#      - ./:/var/www
+#      - ./docker/nginx/keys:/etc/ssl
+#    working_dir: /var/www
+#    user: "${PHP_FPM_PUID}:${PHP_FPM_PGID}"
+#    networks:
+#      - backend
 
   ### PHP-FPM ###############################################
   app:
@@ -168,7 +168,7 @@ services:
         - PHP_FPM_EXPOSE_PORT=9000
     volumes:
       - .docker/php-fpm/php${PHP_VERSION}.ini:/usr/local/etc/php/php.ini
-      - .docker/php-fpm/entrypoint.sh:${APP_CODE_PATH_CONTAINER}/entrypoint.sh
+      #- .docker/php-fpm/entrypoint.sh:${APP_CODE_PATH_CONTAINER}/entrypoint.sh
       - ${APP_CODE_PATH_HOST}${APP_NAME}:${APP_CODE_PATH_CONTAINER}${APP_CONTAINER_FLAG}
     ports:
       - "${PHP_FPM_SSH_PORT_7}:22"
@@ -186,6 +186,7 @@ services:
       - local
       - backend
     entrypoint: dockerize -wait tcp://mysql:3306 -timeout 40s ./entrypoint.sh
+    #entrypoint: dockerize -wait tcp://mysql:3306 -timeout 40s
 
   ### NGINX Server #########################################
   nginx:
@@ -216,65 +217,65 @@ services:
       - frontend
       - backend
 
-  ### Laravel Worker ############################################
-  laravel-worker:
-    image: resolutte-laravel-worker
-    container_name: laravel-worker
-    restart: always
-    build:
-      context: ./
-      dockerfile: .docker/laravel-worker/Dockerfile
-      args:
-        - PHP_VERSION=${PHP_VERSION}
-        - PHALCON_VERSION=${PHALCON_VERSION}
-        - INSTALL_PGSQL=${PHP_WORKER_INSTALL_PGSQL}
-        - INSTALL_BCMATH=${PHP_WORKER_INSTALL_BCMATH}
-        - INSTALL_PHALCON=${PHP_WORKER_INSTALL_PHALCON}
-        - INSTALL_SOAP=${PHP_WORKER_INSTALL_SOAP}
-        - INSTALL_ZIP_ARCHIVE=${PHP_WORKER_INSTALL_ZIP_ARCHIVE}
-        - INSTALL_MYSQL_CLIENT=${PHP_WORKER_INSTALL_MYSQL_CLIENT}
-        - INSTALL_AMQP=${PHP_WORKER_INSTALL_AMQP}
-        - INSTALL_CASSANDRA=${PHP_WORKER_INSTALL_CASSANDRA}
-        - INSTALL_GEARMAN=${PHP_WORKER_INSTALL_GEARMAN}
-        - INSTALL_GHOSTSCRIPT=${PHP_WORKER_INSTALL_GHOSTSCRIPT}
-        - INSTALL_SWOOLE=${PHP_WORKER_INSTALL_SWOOLE}
-        - INSTALL_TAINT=${PHP_WORKER_INSTALL_TAINT}
-        - INSTALL_FFMPEG=${PHP_WORKER_INSTALL_FFMPEG}
-        - INSTALL_GMP=${PHP_WORKER_INSTALL_GMP}
-        - INSTALL_REDIS=${PHP_WORKER_INSTALL_REDIS}
-        - PUID=${PHP_WORKER_PUID}
-        - PGID=${PHP_WORKER_PGID}
-    volumes:
-      - ${APP_CODE_PATH_HOST}${APP_NAME}:${APP_CODE_PATH_CONTAINER}${APP_CONTAINER_FLAG}
-      - .docker/laravel-worker/supervisord.d:/etc/supervisord.d
-    depends_on:
-      - app
-    networks:
-      - local
-      - backend
-
-  ### Laravel Horizon ############################################
-  laravel-horizon:
-    image: resolutte-laravel-horizon
-    container_name: laravel-horizon
-    restart: always
-    build:
-      context: ./
-      dockerfile: .docker/laravel-horizon/Dockerfile
-      args:
-        - PHP_VERSION=${PHP_VERSION}
-        - INSTALL_PGSQL=${PHP_FPM_INSTALL_PGSQL}
-        - INSTALL_BCMATH=${PHP_FPM_INSTALL_BCMATH}
-        - INSTALL_MEMCACHED=${PHP_FPM_INSTALL_MEMCACHED}
-        - INSTALL_SOCKETS=${LARAVEL_HORIZON_INSTALL_SOCKETS}
-        - INSTALL_CASSANDRA=${PHP_FPM_INSTALL_CASSANDRA}
-        - INSTALL_PHPREDIS=${LARAVEL_HORIZON_INSTALL_PHPREDIS}
-        - INSTALL_MONGO=${LARAVEL_HORIZON_INSTALL_MONGO}
-    volumes:
-      - ${APP_CODE_PATH_HOST}${APP_NAME}:${APP_CODE_PATH_CONTAINER}${APP_CONTAINER_FLAG}
-      - .docker/laravel-horizon/supervisord.d:/etc/supervisord.d
-    depends_on:
-      - app
-    networks:
-      - local
-      - backend
+#  ### Laravel Worker ############################################
+#  laravel-worker:
+#    image: resolutte-laravel-worker
+#    container_name: laravel-worker
+#    restart: always
+#    build:
+#      context: ./
+#      dockerfile: .docker/laravel-worker/Dockerfile
+#      args:
+#        - PHP_VERSION=${PHP_VERSION}
+#        - PHALCON_VERSION=${PHALCON_VERSION}
+#        - INSTALL_PGSQL=${PHP_WORKER_INSTALL_PGSQL}
+#        - INSTALL_BCMATH=${PHP_WORKER_INSTALL_BCMATH}
+#        - INSTALL_PHALCON=${PHP_WORKER_INSTALL_PHALCON}
+#        - INSTALL_SOAP=${PHP_WORKER_INSTALL_SOAP}
+#        - INSTALL_ZIP_ARCHIVE=${PHP_WORKER_INSTALL_ZIP_ARCHIVE}
+#        - INSTALL_MYSQL_CLIENT=${PHP_WORKER_INSTALL_MYSQL_CLIENT}
+#        - INSTALL_AMQP=${PHP_WORKER_INSTALL_AMQP}
+#        - INSTALL_CASSANDRA=${PHP_WORKER_INSTALL_CASSANDRA}
+#        - INSTALL_GEARMAN=${PHP_WORKER_INSTALL_GEARMAN}
+#        - INSTALL_GHOSTSCRIPT=${PHP_WORKER_INSTALL_GHOSTSCRIPT}
+#        - INSTALL_SWOOLE=${PHP_WORKER_INSTALL_SWOOLE}
+#        - INSTALL_TAINT=${PHP_WORKER_INSTALL_TAINT}
+#        - INSTALL_FFMPEG=${PHP_WORKER_INSTALL_FFMPEG}
+#        - INSTALL_GMP=${PHP_WORKER_INSTALL_GMP}
+#        - INSTALL_REDIS=${PHP_WORKER_INSTALL_REDIS}
+#        - PUID=${PHP_WORKER_PUID}
+#        - PGID=${PHP_WORKER_PGID}
+#    volumes:
+#      - ${APP_CODE_PATH_HOST}${APP_NAME}:${APP_CODE_PATH_CONTAINER}${APP_CONTAINER_FLAG}
+#      - .docker/laravel-worker/supervisord.d:/etc/supervisord.d
+#    depends_on:
+#      - app
+#    networks:
+#      - local
+#      - backend
+#
+#  ### Laravel Horizon ############################################
+#  laravel-horizon:
+#    image: resolutte-laravel-horizon
+#    container_name: laravel-horizon
+#    restart: always
+#    build:
+#      context: ./
+#      dockerfile: .docker/laravel-horizon/Dockerfile
+#      args:
+#        - PHP_VERSION=${PHP_VERSION}
+#        - INSTALL_PGSQL=${PHP_FPM_INSTALL_PGSQL}
+#        - INSTALL_BCMATH=${PHP_FPM_INSTALL_BCMATH}
+#        - INSTALL_MEMCACHED=${PHP_FPM_INSTALL_MEMCACHED}
+#        - INSTALL_SOCKETS=${LARAVEL_HORIZON_INSTALL_SOCKETS}
+#        - INSTALL_CASSANDRA=${PHP_FPM_INSTALL_CASSANDRA}
+#        - INSTALL_PHPREDIS=${LARAVEL_HORIZON_INSTALL_PHPREDIS}
+#        - INSTALL_MONGO=${LARAVEL_HORIZON_INSTALL_MONGO}
+#    volumes:
+#      - ${APP_CODE_PATH_HOST}${APP_NAME}:${APP_CODE_PATH_CONTAINER}${APP_CONTAINER_FLAG}
+#      - .docker/laravel-horizon/supervisord.d:/etc/supervisord.d
+#    depends_on:
+#      - app
+#    networks:
+#      - local
+#      - backend

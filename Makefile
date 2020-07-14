@@ -18,17 +18,17 @@ list:
 	@echo "e 	> 	Exec -it 'Conteiner'"
 
 DataUp:
-	docker-compose -f ~/docker/docker-db/docker-compose.yml up -d mysql redis mongo
+	docker-compose -f ~/docker/docker-db/docker-compose.yml --env-file ~/docker/docker-db/.env up -d mysql redis mongo
 
 DataDown:
-	docker-compose -f ~/docker/docker-db/docker-compose.yml down
+	docker-compose -f ~/docker/docker-db/docker-compose.yml  --env-file ~/docker/docker-db/.env down
 
 .PHONY: docker-compose up -d
-1:
+1:	DataUp
 	docker-compose up -d
 
 .PHONY: docker-compose down
-2:
+2:	DataDown
 	docker-compose down
 
 .PHONY: docker-compose build All
@@ -147,16 +147,16 @@ DRmiImageUser:
 	docker rmi -f ${APP_NAME}-minio
 
 .PHONY: Pull in docker registry
-5: RegistryUp RegistryLogin DPullToDockerhub DRmiImageUser DTagToUser DRmiImageDockerhub RegistryDown
+5:	RegistryUp RegistryLogin DPullToDockerhub DRmiImageUser DTagToUser DRmiImageDockerhub RegistryDown
 
 .PHONY: Push in docker registry
-6: RegistryUp RegistryLogin DTagToDockerhub DPushToDockerhub DRmiImageDockerhub RegistryDown
+6:	RegistryUp RegistryLogin DTagToDockerhub DPushToDockerhub DRmiImageDockerhub RegistryDown
 
 .PHONY: Pull in docker registry
-7: DockerhubLogin DPullToDockerhub DRmiImageUser DTagToUser DRmiImageDockerhub
+7:	DockerhubLogin DPullToDockerhub DRmiImageUser DTagToUser DRmiImageDockerhub
 
 .PHONY: Push in docker registry
-8: DockerhubLogin DTagToDockerhub DPushToDockerhub DRmiImageDockerhub
+8:	DockerhubLogin DTagToDockerhub DPushToDockerhub DRmiImageDockerhub
 
 .PHONY: K8S - kubectl apply
 k:

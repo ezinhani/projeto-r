@@ -17,5 +17,5 @@ APP_NAME=resolutte
 Definir prefixo de nome de imagem em docker-compose.yml:
 
 ```
-image: resolutte-nome_da_imagem
+image: APP_NAME-nome_da_imagem
 ```
