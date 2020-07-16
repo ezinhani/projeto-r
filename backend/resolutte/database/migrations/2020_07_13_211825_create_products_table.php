@@ -18,6 +18,10 @@ class CreateProductsTable extends Migration
             $table->string('name');
             $table->text('detail');
             $table->timestamps();
+
+//            $this->unsignedBigInteger('created_by')->nullable();
+//            $this->unsignedBigInteger('updated_by')->nullable();
+//            $this->unsignedBigInteger('deleted_by')->nullable();
         });
     }
 

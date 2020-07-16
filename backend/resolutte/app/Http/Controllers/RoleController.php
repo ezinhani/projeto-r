@@ -6,8 +6,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
+use App\Models\Permission\Role;
+use App\Models\Permission\Permission;
 use DB;
 
 
@@ -35,6 +35,7 @@ class RoleController extends Controller
     public function index(Request $request)
     {
         $roles = Role::orderBy('id','DESC')->paginate(5);
+
         return view('roles.index',compact('roles'))
             ->with('i', ($request->input('page', 1) - 1) * 5);
     }
@@ -76,7 +77,7 @@ class RoleController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  string  $id
      * @return \Illuminate\Http\Response
      */
     public function show($id)
@@ -94,7 +95,7 @@ class RoleController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param  string  $id
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
@@ -124,14 +125,11 @@ class RoleController extends Controller
             'permission' => 'required',
         ]);
 
-
         $role = Role::find($id);
         $role->name = $request->input('name');
         $role->save();
 
-
         $role->syncPermissions($request->input('permission'));
-
 
         return redirect()->route('roles.index')
                         ->with('success','Role updated successfully');

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Model\Access\User;
+namespace App\Models\Access\User;
 
+use App\Traits\Uuid;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -9,7 +10,11 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use Notifiable, HasRoles;
+    use Notifiable, HasRoles, Uuid;
+
+    public $incrementing = false;
+
+    protected $primaryKey = 'id';
 
     /**
      * The attributes that are mass assignable.
@@ -35,6 +40,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $casts = [
+        'id' => 'string',
         'email_verified_at' => 'datetime',
     ];
 }

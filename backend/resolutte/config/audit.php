@@ -13,7 +13,8 @@ return [
     |
     */
 
-    'implementation' => OwenIt\Auditing\Models\Audit::class,
+    //'implementation' => OwenIt\Auditing\Models\Audit::class,
+    'implementation' => App\Models\Audit\MongoAudit::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -27,6 +28,7 @@ return [
     'user' => [
         'morph_prefix' => 'user',
         'guards'       => [
+            //'admin',
             'web',
             'api',
         ],
@@ -72,7 +74,7 @@ return [
     |
     */
 
-    'strict' => false,
+    'strict' => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -120,7 +122,7 @@ return [
     'drivers' => [
         'database' => [
             'table'      => 'audits',
-            'connection' => null,
+            'connection' => 'mongodb',
         ],
     ],
 

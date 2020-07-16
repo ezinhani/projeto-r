@@ -52,7 +52,7 @@ services:
 #    entrypoint: "npm run ${MIX_MODE}"
 #    volumes:
 #      - ./:/var/www
-#      - ./docker/nginx/keys:/etc/ssl
+#      - ./.docker/nginx/keys:/etc/ssl
 #    working_dir: /var/www
 #    user: "${PHP_FPM_PUID}:${PHP_FPM_PGID}"
 #    networks:

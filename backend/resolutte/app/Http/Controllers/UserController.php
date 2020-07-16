@@ -6,8 +6,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Model\Access\User\User;
-use Spatie\Permission\Models\Role;
+use App\Models\Access\User\User;
+use App\Models\Permission\Role;
 use DB;
 use Hash;
 

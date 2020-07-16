@@ -4,7 +4,7 @@
 namespace App\Http\Controllers;
 
 
-use App\Model\Product\Product;
+use App\Models\Product\Product;
 use Illuminate\Http\Request;
 
 
@@ -62,7 +62,6 @@ class ProductController extends Controller
 
         Product::create($request->all());
 
-
         return redirect()->route('products.index')
                         ->with('success','Product created successfully.');
     }
@@ -71,7 +70,7 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Model\Product\Product  $product
+     * @param  \App\Models\Product\Product  $product
      * @return \Illuminate\Http\Response
      */
     public function show(Product $product)
@@ -83,7 +82,7 @@ class ProductController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Model\Product\Product  $product
+     * @param  \App\Models\Product\Product  $product
      * @return \Illuminate\Http\Response
      */
     public function edit(Product $product)
@@ -96,7 +95,7 @@ class ProductController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Model\Product\Product  $product
+     * @param  \App\Models\Product\Product  $product
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Product $product)
@@ -106,9 +105,7 @@ class ProductController extends Controller
             'detail' => 'required',
         ]);
 
-
         $product->update($request->all());
-
 
         return redirect()->route('products.index')
                         ->with('success','Product updated successfully');
@@ -118,7 +115,7 @@ class ProductController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Model\Product\Product  $product
+     * @param  \App\Models\Product\Product  $product
      * @return \Illuminate\Http\Response
      */
     public function destroy(Product $product)
